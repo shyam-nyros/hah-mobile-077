@@ -57,5 +57,15 @@ target 'mobile' do
       config[:reactNativePath],
       :mac_catalyst_enabled => false
     )
+
+    # fmt 11.0.2 (bundled with RN 0.77) fails to compile under C++20 with newer Xcode
+    # ("call to consteval function ... is not a constant expression"), so build it as C++17
+    installer.pods_project.targets.each do |target|
+      if target.name == 'fmt'
+        target.build_configurations.each do |config|
+          config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+        end
+      end
+    end
   end
 end
