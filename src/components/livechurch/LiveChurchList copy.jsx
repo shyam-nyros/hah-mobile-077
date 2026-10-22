@@ -1,0 +1,191 @@
+import React, {memo, useState, useEffect} from 'react';
+import {View, Text, TouchableOpacity, Image} from 'react-native';
+import tw from 'twrnc';
+import {convertEventTime, formatDate, formattedLocalDate, formattedLocalTime} from '../../utils/formattedDate';
+import {useNavigation} from '@react-navigation/native';
+import SaveToCalendar from './SaveToCalendar';
+import {useLiveChurchRsvpAPIMutation} from '../../features/livechurches/liveChurchAPiSlice';
+import LiveChurchModal from './LiveChurchModal';
+import LoadingSpinner from '../LoadingSpinner';
+
+const LiveChurchList = ({item, index, length}) => {
+  const navigation = useNavigation();
+  const [modalVisible, setModalVisible] = useState(false);
+
+  
+  
+  
+
+  const concatAddress = item => {
+    if (item.church) {
+      return `${item.church.city}, ${item.church.zipcode} `;
+    }
+    if (item.organization) {
+      return `${item.organization.city}, ${item.organization.zipcode}`;
+    }
+    return 'No address available';
+  };
+
+  const [attendingCount, setAttendingCount] = useState(item.attendeesCount);
+
+  const [attending, setAttending] = useState(
+    item.currentUserResponse || 'default',
+  );
+
+  useEffect(() => {
+    setAttending(item.currentUserResponse || 'default');
+    setAttendingCount(item.attendeesCount);
+  }, [item]);
+
+  const [rsvpAPI, {isLoading, isError}] = useLiveChurchRsvpAPIMutation();
+
+  // RSVP handler
+  const handleLiveChurchConfirmation = async actionType => {
+    try {
+      const response = await rsvpAPI({
+        id: item._id,
+        rsvp: actionType,
+      }).unwrap();
+
+
+      setAttendingCount(response.liveChurch_attendee.attendeesCount);
+      setAttending(
+        response.liveChurch_attendee.rsvp === 'Attending'
+          ? 'Attending'
+          : 'Not Attending',
+      );
+    } catch (error) {
+ 
+    } finally {
+      setModalVisible(false);
+    }
+  };
+
+  // Handle navigation to church details
+  const handleChurchDetails = (liveChurchId, churchId) => {
+    navigation.navigate('LiveChurchDetails', {liveChurchId, churchId});
+  };
+
+  return (
+    <>
+      {/* List Items */}
+      <TouchableOpacity
+        onPress={() =>
+          handleChurchDetails(
+            item._id,
+            item?.church ? item?.church?._id : item?.organization?._id,
+          )
+        }
+        key={item._id}>
+        <View style={tw`flex-row gap-2 `}>
+          <View>
+            <Image
+              source={
+                item?.cover_image?.path
+                  ? {uri: item?.cover_image?.path}
+                  : require('../../assets/images/livechurchplaceholder.png')
+              }
+              style={tw`w-20 h-25 rounded-[10px]`}
+            />
+          </View>
+          <View style={tw`flex-row flex-1`}>
+            <View>
+              <TouchableOpacity
+                onPress={() =>
+                  handleChurchDetails(
+                    item._id,
+                    item?.church ? item?.church?._id : item?.organization?._id,
+                  )
+                }>
+                <Text
+                  style={tw`text-[14px]  w-[180px] text-[#040641] font-medium`}
+                  numberOfLines={2}>
+                  {item.title}
+                </Text>
+              </TouchableOpacity>
+              <Text
+                numberOfLines={2}
+                style={tw`text-[11px] text-[#040641] w-[180px] mt-1 flex flex-wrap opacity-50`}>
+                {item.church?.name
+                  ? `${item.church.name} | ${concatAddress(item)}`
+                  : `${item.organization?.name} | ${item.organization?.city}, ${item.organization?.zipcode} `}
+              </Text>
+              <Text
+                style={tw`text-[11px] text-[#040641] flex flex-wrap opacity-50`}>
+                {/* {`${formattedLocalDate(item.start_date)} - ${formattedLocalTime(item?.start_time)}`} */}
+                 {convertEventTime(item?.start_date, item?.slotInfo?.start_time, item?.timezone?.tzCode)}
+              </Text>
+              {/* <Text>{`${item?.start_date} ${item?.start_time} ${item?.timezone?.tzCode}`}</Text> */}
+              <View style={tw`flex-row items-center mt-1`}>
+                <View style={tw`relative mr-10`}>
+                  <Image
+                    source={require('../../assets/images/profile1.png')}
+                    style={tw`w-4 h-4 rounded-full absolute -top-2 left-0`}
+                  />
+                  <Image
+                    source={require('../../assets/images/profile3.png')}
+                    style={tw`w-4 h-4 rounded-full absolute -top-2 left-2`}
+                  />
+                  <Image
+                    source={require('../../assets/images/profile2.png')}
+                    style={tw`w-4 h-4 rounded-full absolute -top-2 left-4`}
+                  />
+                </View>
+                <Text style={tw`text-[10px] text-[#040641] opacity-50 `}>
+                  {attendingCount} attending
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={tw`flex-row flex-1 justify-end`}>
+            <View style={tw`flex-row gap-2`}>
+              <View>
+                <SaveToCalendar
+                  item={item}
+                  liveChurchId={item._id}
+                  event_type="Live Church"
+                  add_to_calender={item.add_to_calender1}
+                />
+              </View>
+              <TouchableOpacity
+                onPress={() =>
+                  handleLiveChurchConfirmation(
+                    attending === 'Attending' ? 0 : 1,
+                  )
+                }>
+                {attending === 'default' && (
+                  <Image
+                    source={require('../../assets/images/personbordericon.png')}
+                    style={tw`w-[23px] h-[23px]`}
+                  />
+                )}
+
+                {attending === 'Attending' && (
+                  <Image
+                    source={require('../../assets/images/personbordericongreen.png')}
+                    style={tw`w-[23px] h-[23px]`}
+                  />
+                )}
+
+                {attending === 'Not Attending' && (
+                  <Image
+                    source={require('../../assets/images/personbordericon.png')}
+                    style={tw`w-[23px] h-[23px]`}
+                  />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+        {index < length - 1 && (
+          <View style={tw`border-b border-gray-300 opacity-60 mb-3 mt-3`} />
+        )}
+      </TouchableOpacity>
+
+      {isLoading && <LoadingSpinner size={"small"} />}
+    </>
+  );
+};
+
+export default memo(LiveChurchList);
