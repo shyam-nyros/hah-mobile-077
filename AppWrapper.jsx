@@ -5,6 +5,8 @@ import Sticky from './src/components/player/Sticky';
 import {useEffect, useRef} from 'react';
 import TrackPlayer from 'react-native-track-player';
 import FloatingChatIcon from './src/components/ministryassistant/ministryicon';
+import ActivityTracker from './src/components/ActivityTracker';
+import {startPage} from './src/utils/userActivity';
 // Firebase email-link (deep link) login is not used in the app right now -
 // its imports and handler below are commented out. The hahmobile://__/auth/action
 // deep link itself stays registered (AndroidManifest.xml / Info.plist): the
@@ -18,6 +20,28 @@ import FloatingChatIcon from './src/components/ministryassistant/ministryicon';
   //  clearPendingFirebaseEmail,
 // } from './src/utils/firebaseEmailLinkStorage';
 // import {showToast} from './src/utils/toast/showToast';
+
+// Navigators every screen sits in - not part of a screen's tracked path
+const WRAPPER_ROUTES = ['App', 'Auth', 'Main'];
+// Routes that only hold a nested navigator. React Navigation reports them as
+// the current screen for a moment before their first inner screen exists,
+// which would log an empty view - so they're skipped and the inner screen
+// ("Fellowship/Feed") is tracked instead.
+const CONTAINER_ROUTES = [...WRAPPER_ROUTES, 'Onboard', 'Fellowship', 'LiveActivitiesDetails'];
+
+// "Fellowship/Feed" for a screen inside a nested navigator (the Fellowship and
+// Live Activity screens each have a "Feed" tab), otherwise just the route name
+const screenPath = (rootState, routeName) => {
+  const names = [];
+  let state = rootState;
+  while (state?.routes) {
+    const route = state.routes[state.index ?? 0];
+    if (!WRAPPER_ROUTES.includes(route.name)) names.push(route.name);
+    state = route.state;
+  }
+  if (names[names.length - 1] !== routeName) return routeName;
+  return names.slice(-2).join('/');
+};
 
 const AppWrapper = () => {
   // const dispatch = useDispatch();
@@ -219,8 +243,24 @@ const AppWrapper = () => {
   //   };
   // }, []);
 
+  // Admin "User Analytics" screen tracking (utils/userActivity.js): reports
+  // the focused screen whenever it changes. The route key tells a newly opened
+  // screen apart from a params update on the same one.
+  const trackedRouteKeyRef = useRef(null);
+  const trackCurrentScreen = () => {
+    const route = navigationRef.current?.getCurrentRoute();
+    if (!route || route.key === trackedRouteKeyRef.current) return;
+    if (CONTAINER_ROUTES.includes(route.name)) return;
+    trackedRouteKeyRef.current = route.key;
+    startPage(screenPath(navigationRef.current.getRootState(), route.name), route.key);
+  };
+
   return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer
+      ref={navigationRef}
+      onReady={trackCurrentScreen}
+      onStateChange={trackCurrentScreen}>
+      <ActivityTracker />
       <RootStack isLoggedIn={isLoggedIn} />
       {showStickyPlayer && <Sticky />}
       {/* {isLoggedIn && showMinistryIcon && <FloatingChatIcon />} */}

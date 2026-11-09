@@ -2,9 +2,12 @@ import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 import {logout} from '../features/auth/authSlice';
 import showToast from '../utils/toast/showToast';
 
+// Also used by utils/userActivity.js, which posts outside RTK Query
+export const API_BASE_URL = 'https://www.heavenathand.org:3002';
+
 const baseQuery = fetchBaseQuery({
   // baseUrl: 'http://000.000.00.0:3002',
-  baseUrl: 'https://www.heavenathand.org:3002',
+  baseUrl: API_BASE_URL,
 
   prepareHeaders: (headers, {getState}) => {
     const state = getState();

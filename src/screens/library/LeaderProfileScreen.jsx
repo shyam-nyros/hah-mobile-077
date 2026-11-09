@@ -1,3 +1,4 @@
+import {useEngagementTimer} from '../../utils/userActivity';
 import React, {useEffect, useState} from 'react';
 
 import {
@@ -40,6 +41,8 @@ const LeaderProfileScreen = ({route, navigation}) => {
     isLoading: leaderDetailsLoading,
     error: leaderDetailsError,
   } = useLeaderProfileAPIQuery(leaderId, {refetchOnMountOrArgChange: true});
+  // admin User Analytics: time on this leader's profile (utils/userActivity.js)
+  useEngagementTimer('leader_view', 'leader_id', leaderDetails?._id);
 
   const [
     followLeaderAPI,

@@ -15,6 +15,7 @@ import {
   Linking,
 } from 'react-native';
 
+import {useEngagementTimer} from '../../utils/userActivity';
 import React, {useEffect, useRef, useState} from 'react';
 import tw from 'twrnc';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
@@ -60,6 +61,8 @@ const BookDetailsScreen = ({route, navigation}) => {
     isFetching: libraryDetailsFetching,
     error: libraryDetailsError,
   } = useLibraryDetailsAPIQuery(libraryItemId);
+  // admin User Analytics: time on this library item (utils/userActivity.js)
+  useEngagementTimer('library_view', 'library_id', libraryDetails?.library?._id);
 
   const getCoverImage = libraryType => {
     switch (libraryType) {

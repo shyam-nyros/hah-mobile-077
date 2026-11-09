@@ -1,3 +1,4 @@
+import {useEngagementTimer, useTrackedTab} from '../../utils/userActivity';
 import React, {useEffect, useState} from 'react';
 import {
   View,
@@ -60,6 +61,8 @@ const LiveChurchDetailsScreen = ({route, navigation}) => {
   const [liveEventStarted, setLiveEventStarted] = useState(false);
   const [showInfoAlert, setShowInfoAlert] = useState(false);
   const [activeTab, setActiveTab] = useState('Feed');
+  // admin User Analytics: each tab counts as its own screen (utils/userActivity.js)
+  useTrackedTab(activeTab);
   const [followLoading, setFollowLoading] = useState(false);
 
   const [addAnotherChurchAPI] = useAddAnotherChurchAPIMutation();
@@ -103,6 +106,12 @@ const LiveChurchDetailsScreen = ({route, navigation}) => {
   } = useLiveChurchDetailsAPIQuery(
     {liveChurchId: liveChurchId ? liveChurchId : churchId},
     {refetchOnMountOrArgChange: true},
+  );
+  // admin User Analytics: time on this church's page (utils/userActivity.js)
+  useEngagementTimer(
+    'church_view',
+    'church_id',
+    liveChurchDetails?.liveChurch?.church?._id,
   );
 
  

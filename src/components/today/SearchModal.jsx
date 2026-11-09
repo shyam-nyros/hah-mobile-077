@@ -8,6 +8,7 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import tw from 'twrnc';
 import {useSearchAPIQuery} from '../../features/home/homeApiSlice';

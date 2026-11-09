@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import LinearGradient from 'react-native-linear-gradient';
+import {useEngagementTimer} from '../../utils/userActivity';
 import React, {useEffect, useState} from 'react';
 import tw from 'twrnc';
 import {useNavigation} from '@react-navigation/native';
@@ -81,6 +82,8 @@ const VideoDetailsScreen = ({route}) => {
     isFetching: libraryDetailsFetching,
     error: libraryDetailsError,
   } = useLibraryDetailsAPIQuery(libraryItemId);
+  // admin User Analytics: time on this library item (utils/userActivity.js)
+  useEngagementTimer('library_view', 'library_id', libraryDetails?.library?._id);
 
   const handleBookmarkToggle = async () => {
     if (userInfo?.is_name_verified === false) {
