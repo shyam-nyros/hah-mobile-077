@@ -61,6 +61,7 @@ import ActivityModal from '../../components/today/ActivityModal';
 import {setChurchList} from '../../features/churches/churchSlice';
 import OtherLiveChurchModal from '../../components/livechurch/OtherLiveChurchModal';
 import CurrentChurchModal from '../../components/today/CurrentChurchModal';
+import AppFeedbackPrompt from '../../components/today/AppFeedbackPrompt';
 import {convertEventTime} from '../../utils/formattedDate';
 import {Platform, Linking} from 'react-native';
 import {Dropdown} from 'react-native-element-dropdown';
@@ -440,6 +441,8 @@ const TodayScreen = ({navigation}) => {
           {addRequestForm && <ActivityModal />}
           {addMoreChurchesModal && <OtherLiveChurchModal />}
           {currentChurchModal && <CurrentChurchModal />}
+          {/* App review popup (shown on the 11th app open) */}
+          <AppFeedbackPrompt />
 
           {/* Complete Your Profile */}
           {userInfo && !profileDismissed && (!userInfo.is_name_verified || hasDefaultSocialName) && (
