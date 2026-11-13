@@ -70,8 +70,8 @@ android {
         applicationId "com.hah"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 33
-        versionName "1.0.25"
+        versionCode 34
+        versionName "1.0.26"
     }
 
     signingConfigs {
