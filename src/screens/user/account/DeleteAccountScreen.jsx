@@ -100,8 +100,8 @@ const DeleteAccount = () => {
 
           <Text
             style={tw`text-[14px] text-center text-[#ff3838] opacity-70 mt-2`}>
-            Please note that upon Deleting the account you will not able to
-            access it again.
+            Your account will be permanently deleted after 30 days. Log in
+            again within 30 days to cancel the deletion.
           </Text>
         </View>
 

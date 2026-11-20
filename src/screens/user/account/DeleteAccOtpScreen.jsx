@@ -64,7 +64,12 @@ const DeleteAccOtpScreen = ({route, navigation}) => {
 
       await handleLogout();
       navigation.navigate('Signin');
-      showToast('success', 'Account Deleted');
+      showToast(
+        'success',
+        response?.deletion_scheduled_for
+          ? 'Account scheduled for deletion. Log in within 30 days to cancel.'
+          : 'Account Deleted',
+      );
     } catch (error) {
  
       if (error?.data?.msg === 'Invalid OTP') {
